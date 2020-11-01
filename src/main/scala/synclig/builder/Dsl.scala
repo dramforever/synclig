@@ -20,13 +20,13 @@ object Dsl:
 
   type WithContext[T] = Context ?=> T
 
-  def reg(name: String, init: Expr = Undefined): WithContext[VarReg] =
+  def reg(name: String, init: Expr.WithSubst = Undefined): WithContext[Reg] =
     val res = Name(name)
     context.validNames += res
     context.flow ++= Flow.assign(res, init)
-    VarReg(res)
+    Reg(res)
 
-  def (name: VarReg) := (value: Expr): WithContext[Unit] =
+  def (name: Reg) := (value: Expr.WithSubst): WithContext[Unit] =
     context.flow ++= Flow.assign(name.name, value)
 
   def skip: WithContext[Unit] =
@@ -47,17 +47,17 @@ object Dsl:
 
     context.flow ++= f
 
-  def when(branches: (Expr, WithContext[Unit])*): WithContext[Unit] =
+  def when(branches: (Expr.WithSubst, WithContext[Unit])*): WithContext[Unit] =
     context.flow ++= branches.foldRight(Flow.empty) {
       case ((cond, body), next) =>
         val sub = context.copy(flow = Flow.cond(cond, true)).gen(body)
         sub merge (Flow.cond(cond, false) ++ next)
     }
 
-  def when(cond: Expr)(body: WithContext[Unit]): WithContext[Unit] =
-    when(cond -> ((using ctx: Context) => body(using ctx)))
+  def when(cond: Expr.WithSubst)(body: WithContext[Unit]): WithContext[Unit] =
+    when(((using subst: Subst) => cond(using subst)) -> ((using ctx: Context) => body(using ctx)))
 
-  def whilst(cond: Expr)(body: WithContext[Unit]): WithContext[Unit] =
+  def whilst(cond: Expr.WithSubst)(body: WithContext[Unit]): WithContext[Unit] =
     val sub = context.copy(flow = Flow.cond(cond, true)).gen(body)
     sub match
       case _: Flow.Joined =>

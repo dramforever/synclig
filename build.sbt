@@ -10,5 +10,5 @@ lazy val root = project
 
     libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
 
-    scalacOptions ++= Seq("-Yindent-colons")
+    scalacOptions ++= Seq("-Yindent-colons", "-language:implicitConversions")
   )

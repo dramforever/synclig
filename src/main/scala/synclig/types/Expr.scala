@@ -58,3 +58,12 @@ object Expr:
   extension (value: Long):
     def U: Expr = IntLit(IsUnigned, value)
     def S: Expr = IntLit(IsSigned, value)
+
+  case class Subst(vars: Map[Name, Expr])
+
+  type WithSubst = Subst ?=> Expr
+
+  case class Reg(name: Name)
+
+  implicit def regToWithSubst(reg: Reg): WithSubst =
+    (using subst: Subst) => subst.vars(reg.name)

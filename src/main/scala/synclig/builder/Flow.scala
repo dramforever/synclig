@@ -67,9 +67,9 @@ object Flow:
 
       override def apply(sl: Slice): Through = through(sl)
 
-  import synclig.types.Expr
+  import Expr._
 
-  def cond(expr: Expr, value: Boolean): Flow = Joined(sl =>
+  def cond(expr: Expr.WithSubst, value: Boolean): Flow = Joined(sl =>
     Through(
       pass = sl.cond(expr, value),
       store = Slice.Empty
@@ -81,8 +81,8 @@ object Flow:
     out = out
   )
 
-  def assign(name: Name, value: Expr): Flow = Joined(sl =>
-    Through(sl.assign(name, value), Slice.Empty))
+  def assign(name: Name, value: Expr.WithSubst): Flow = Joined:
+    sl => Through(sl.assign(name, value), Slice.Empty)
 
   val empty: Flow = Joined(sl =>
     Through(

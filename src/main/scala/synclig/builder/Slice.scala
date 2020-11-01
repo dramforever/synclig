@@ -6,8 +6,8 @@ import synclig.types._
 
 sealed trait Slice:
   def merge(other: Slice): Slice
-  def cond(expr: Expr, value: Boolean): Slice
-  def assign(name: Name, value: Expr): Slice
+  def cond(expr: Expr.WithSubst, value: Boolean): Slice
+  def assign(name: Name, value: Expr.WithSubst): Slice
 
 object Slice:
   case class NonEmpty(valid: Slice.Valid) extends Slice:
@@ -15,18 +15,22 @@ object Slice:
       case NonEmpty(valid1) => NonEmpty(valid merge valid1)
       case Empty => this
 
-    override def cond(expr: Expr, value: Boolean): Slice =
-      NonEmpty(valid.copy(cond = valid.cond + (expr -> value)))
+    override def cond(expr: Expr.WithSubst, value: Boolean): Slice =
+      NonEmpty(valid.copy(cond = valid.cond + (expr(using Expr.Subst(valid.vars)) -> value)))
 
-    override def assign(name: Name, value: Expr): Slice =
-      NonEmpty(valid.copy(vars = valid.vars + (name -> value)))
+    override def assign(name: Name, value: Expr.WithSubst): Slice =
+      NonEmpty(
+        valid.copy(
+          vars = valid.vars + (name -> value(using Expr.Subst(valid.vars)))
+        )
+      )
 
     override def toString: String = valid.toString
 
   case object Empty extends Slice:
     override def merge(other: Slice) = other
-    override def cond(_expr: Expr, _value: Boolean): Slice = this
-    override def assign(_name: Name, _value: Expr): Slice = this
+    override def cond(_expr: Expr.WithSubst, _value: Boolean): Slice = this
+    override def assign(_name: Name, _value: Expr.WithSubst): Slice = this
 
   case class Valid(
     vars: Map[Name, Expr],
