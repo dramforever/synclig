@@ -1,3 +1,5 @@
+// Based on https://stackoverflow.com/a/55032051
+
 package synclig.pprint
 
 import synclig.types._
