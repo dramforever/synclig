@@ -9,6 +9,8 @@ def pprint(obj: Any, depth: Int = 0, paramName: Option[String] = None): Unit =
   val prettyName = paramName.fold("")(x => s"$x: ")
   val ptype = obj match { case _: Iterable[Any] => "" case obj: Product => obj.productPrefix case _ => obj.toString }
 
+  print(f"[${System.identityHashCode(obj)}%08x] ")
+
   obj match
     case seq: Iterable[Any] =>
       println(s"$prettyName$ptype")
